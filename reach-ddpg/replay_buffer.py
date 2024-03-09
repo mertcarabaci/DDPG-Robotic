@@ -13,10 +13,10 @@ class ReplayMemory():
         self.current_size = 0
 
     def push(self, transition):
-        self.state[self.current_size] = convert2tensor(np.array(transition.state))
+        self.state[self.current_size] = convert2tensor(transition.state)
         self.action[self.current_size] = convert2tensor(transition.action)
-        self.reward[self.current_size] = convert2tensor(np.array(transition.reward))
-        self.next_state[self.current_size] = convert2tensor(np.array(transition.next_state))
+        self.reward[self.current_size] = convert2tensor(transition.reward)
+        self.next_state[self.current_size] = convert2tensor(transition.next_state)
 
         self.current_size = (self.current_size + 1) % MAX_SIZE
 

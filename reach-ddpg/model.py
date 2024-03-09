@@ -12,17 +12,12 @@ def fanin_init(size, fanin=None):
 class ActorNet(nn.Module):
     def __init__(self, state_dim, action_dim, fc1_dim, fc2_dim, init_w=3e-3):
         super(ActorNet, self).__init__()
-        self.fc1 = nn.Linear(state_dim, fc1_dim)
-        self.fc2 = nn.Linear(fc1_dim, fc2_dim)
-        self.fc3 = nn.Linear(fc2_dim, action_dim)
+        self.fc1 = nn.Linear(state_dim, 64)
+        self.fc2 = nn.Linear(64, 64)
+        self.fc3 = nn.Linear(64, action_dim)
         self.relu = nn.ReLU()
         self.tanh = nn.Tanh()
         #self.init_weights(init_w)
-
-    def init_weights(self, init_w):
-        self.fc1.weight.data = fanin_init(self.fc1.weight.data.size())
-        self.fc2.weight.data = fanin_init(self.fc2.weight.data.size())
-        self.fc3.weight.data.uniform_(-init_w, init_w)
 
     def forward(self, x):
         out = self.fc1(x)
@@ -36,9 +31,9 @@ class ActorNet(nn.Module):
 class CriticNet(nn.Module):
     def __init__(self, state_dim, action_dim, fc1_dim, fc2_dim, init_w=3e-3):
         super(CriticNet, self).__init__()
-        self.fc1 = nn.Linear(state_dim, fc1_dim)#.to(DEVICE)
-        self.fc2 = nn.Linear(fc1_dim+action_dim, fc2_dim)
-        self.fc3 = nn.Linear(fc2_dim, 1)
+        self.fc1 = nn.Linear(state_dim, 64)#.to(DEVICE)
+        self.fc2 = nn.Linear(64+action_dim, 64)
+        self.fc3 = nn.Linear(64, 1)
         self.relu = nn.ReLU()
         #self.init_weights(init_w)
 

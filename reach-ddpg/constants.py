@@ -4,7 +4,7 @@ from collections import namedtuple
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 MAX_SIZE = 1000
-BATCH_SIZE = 64
+BATCH_SIZE = 128
 EPS_MAX = 0.95
 EPS_MIN = 0.1
 EPS_DECAY = 1000

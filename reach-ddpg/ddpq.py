@@ -27,17 +27,17 @@ class DDPG(nn.Module):
         self.critic_target = CriticNet(self.observation_dim, self.action_dim, 5, 4).to(DEVICE)
         self.critic_target.load_state_dict(self.critic.state_dict())
 
-        self.gamma = 0.98
-        self.actor_lr = 0.001
-        self.critic_lr = 0.002
-        self.tau = 0.005
+        self.gamma = 0.99
+        self.actor_lr = 0.0001
+        self.critic_lr = 0.001
+        self.tau = 0.001
         self.memory_capacity = 60000
 
         self.optimizer_actor = torch.optim.Adam(self.actor.parameters(), lr=self.actor_lr)
         self.optimizer_critic = torch.optim.Adam(self.critic.parameters(), lr=self.critic_lr)
         self.loss = nn.MSELoss(reduction='mean')
 
-        self.noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(3), sigma = 0.05 * np.ones(3),theta=0.15) 
+        self.noise = OrnsteinUhlenbeckActionNoise(mean=np.zeros(self.action_dim), sigma = 0.005 * np.ones(self.action_dim))
     
     def reset(self):
         self.noise.reset()
@@ -57,7 +57,6 @@ class DDPG(nn.Module):
             x = abs_action/self.action_space.high[0]
             action /= x 
 
-        action = np.clip(action, self.action_space.low, self.action_space.high) # action: [dx, dy, dz]
         return action
     
     def learn(self):
