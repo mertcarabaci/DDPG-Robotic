@@ -82,17 +82,17 @@ class DDPG(nn.Module):
         for target_param, param in zip(self.critic_target.parameters(), self.critic.parameters()):
             target_param.data.copy_(self.tau * param.data + (1.0 - self.tau) * target_param.data)
 
-    def save_models(self, episode):
-        if not os.path.exists(f'models_custom2/{episode}'):
-            os.makedirs(f'models_custom2/{episode}')
+    def save_models(self, episode, model_dir):
+        if not os.path.exists(f'{model_dir}/{episode}'):
+            os.makedirs(f'{model_dir}/{episode}')
             
-        torch.save(self.actor.state_dict(), f'models_custom2/{episode}/actor.pt')
-        torch.save(self.critic.state_dict(), f'models_custom2/{episode}/critic.pt')
-        torch.save(self.actor_target.state_dict(), f'models_custom2/{episode}/actor_target.pt')
-        torch.save(self.critic_target.state_dict(), f'models_custom2/{episode}/critic_target.pt')
+        torch.save(self.actor.state_dict(), f'{model_dir}/{episode}/actor.pt')
+        torch.save(self.critic.state_dict(), f'{model_dir}/{episode}/critic.pt')
+        torch.save(self.actor_target.state_dict(), f'{model_dir}/{episode}/actor_target.pt')
+        torch.save(self.critic_target.state_dict(), f'{model_dir}/{episode}/critic_target.pt')
 
-    def load_models(self, episode):
-        self.actor.load_state_dict(torch.load(f"models_custom2/{episode}/actor.pt")) 
-        self.critic.load_state_dict(torch.load(f"models_custom2/{episode}/critic.pt")) 
-        self.actor_target.load_state_dict(torch.load(f"models_custom2/{episode}/actor_target.pt")) 
-        self.critic_target.load_state_dict(torch.load(f"models_custom2/{episode}/critic_target.pt")) 
+    def load_models(self, episode, model_dir):
+        self.actor.load_state_dict(torch.load(f"{model_dir}/{episode}/actor.pt")) 
+        self.critic.load_state_dict(torch.load(f"{model_dir}/{episode}/critic.pt")) 
+        self.actor_target.load_state_dict(torch.load(f"{model_dir}/{episode}/actor_target.pt")) 
+        self.critic_target.load_state_dict(torch.load(f"{model_dir}/{episode}/critic_target.pt")) 

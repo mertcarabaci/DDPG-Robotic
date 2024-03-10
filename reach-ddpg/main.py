@@ -8,8 +8,10 @@ import torch
 import numpy as np
 import gymnasium as gym
 
-models_dir = f"models/{int(time.time())}/"
-logdir = f"logs/{int(time.time())}/"
+project_dir = os.path.dirname(os.getcwd())
+
+models_dir = f"{project_dir}/models/{int(time.time())}/"
+logdir = f"{project_dir}/logs/{int(time.time())}/"
 print(f"logdir: {logdir}")
 
 if not os.path.exists(models_dir):
@@ -26,14 +28,14 @@ save_reward_freq = 100
 def create_state(state):
     return np.array(state['achieved_goal'] - state['desired_goal']) 
 
-env = gym.make('FetchReachDense-v2', render_mode="human", max_episode_steps=100)
+env = gym.make('FetchReachDense-v2', max_episode_steps=100)
 state, _ = env.reset()
 state = create_state(state)
 all_episode_reward = []
 history = {'Episode': [], 'AvgReturn': []}
 
 agent = DDPG(state, env.action_space)
-agent.load_models(5500)
+#agent.load_models(5500, models_dir)
 # Loop of episodes
 for ie in range(n_episodes):
     state, _ = env.reset()
@@ -46,7 +48,7 @@ for ie in range(n_episodes):
     # One-step-loop
     while not done:
 
-        action = agent.select_action(state, training=False)
+        action = agent.select_action(state)
 
         # This will make steering much easier
         next_state, reward, terminated, truncated, info = env.step(action)
@@ -54,8 +56,8 @@ for ie in range(n_episodes):
         done = terminated or truncated
 
         # Models action output has a different shape for this problem
-        #agent.memory.push(transition(state, action, np.array(reward), next_state))
-        #agent.learn()
+        agent.memory.push(transition(state, action, np.array(reward), next_state))
+        agent.learn()
 
         state = next_state
         episode_reward += reward
@@ -81,6 +83,6 @@ for ie in range(n_episodes):
         plt.xticks(fontsize=14)
         plt.yticks(fontsize=14)
         plt.grid(axis='y')
-        plt.savefig("rewards.png")
+        plt.savefig(f"{project_dir}/ddpg_rewards.png")
         print('Saving best solution')
-        agent.save_models(ie)
+        agent.save_models(ie, models_dir)
