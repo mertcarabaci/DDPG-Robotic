@@ -11,15 +11,9 @@ import gymnasium as gym
 
 project_dir = os.path.dirname(__file__)
 
-models_dir = f"{project_dir}/models/{int(time.time())}/"
-logdir = f"{project_dir}/logs/{int(time.time())}/"
+models_dir = f"{project_dir}/models/1710265881/"
+logdir = f"{project_dir}/logs/1710265881/"
 print(f"logdir: {logdir}")
-
-if not os.path.exists(models_dir):
-	os.makedirs(models_dir)
-
-if not os.path.exists(logdir):
-	os.makedirs(logdir)
 
 n_episodes = 10000
 save_model_freq = 300
@@ -29,14 +23,14 @@ save_reward_freq = 100
 def create_state(state):
     return np.append(state["observation"][:3], state["desired_goal"]-state["achieved_goal"])
 
-env = gym.make('FetchReachDense-v2', max_episode_steps=100)
+env = gym.make('FetchReachDense-v2', max_episode_steps=100, render_mode="human")
 state, _ = env.reset()
 state = create_state(state)
 all_episode_reward = []
 history = {'Episode': [], 'AvgReturn': []}
 
 agent = DDPG(state, env.action_space)
-#agent.load_models(5500, models_dir)
+agent.load_models(900, models_dir)
 # Loop of episodes
 for ie in range(n_episodes):
     state, _ = env.reset()
@@ -49,7 +43,7 @@ for ie in range(n_episodes):
     # One-step-loop
     while not done:
 
-        action = agent.select_action(state)
+        action = agent.select_action(state, training=False)
 
         # This will make steering much easier
         next_state, reward, terminated, truncated, info = env.step(action)

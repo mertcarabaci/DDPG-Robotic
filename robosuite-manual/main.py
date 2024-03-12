@@ -4,9 +4,11 @@ import time
 from constants import transition
 from IPython.display import clear_output
 import matplotlib.pyplot as plt
-import torch
 import numpy as np
 import gymnasium as gym
+import robosuite as suite
+from robosuite.controllers import load_controller_config
+from robosuite.wrappers.gym_wrapper import GymWrapper
 
 
 project_dir = os.path.dirname(__file__)
@@ -21,17 +23,31 @@ if not os.path.exists(models_dir):
 if not os.path.exists(logdir):
 	os.makedirs(logdir)
 
-n_episodes = 10000
-save_model_freq = 300
+
+config = load_controller_config(default_controller="OSC_POSE")
+
+# create environment instance
+env = suite.make(
+    "Lift",
+    robots=["Sawyer"],             # load a Sawyer robot and a Panda robot
+    gripper_types="RethinkGripper",                # use default grippers per robot arm
+    has_renderer=True,                     # no on-screen rendering
+    controller_configs=config,
+    has_offscreen_renderer=False,           # no off-screen rendering
+    control_freq=25,                        # 20 hz control for applied actions
+    horizon=200,                            # each episode terminates after 200 steps
+    use_object_obs=True,                    # provide object observations to agent
+    use_camera_obs=False,                   # don't provide image observations to agent
+    reward_shaping=True,                    # use a dense reward signal for learning
+)
+
+n_episodes = 50000
+save_model_freq = 500
 save_reward_freq = 100
 
-
-def create_state(state):
-    return np.append(state["observation"][:3], state["desired_goal"]-state["achieved_goal"])
-
-env = gym.make('FetchReachDense-v2', max_episode_steps=100)
+state = env.reset()
+env = GymWrapper(env, keys=["gripper_to_cube_pos","robot0_gripper_qpos","robot0_eef_pos","robot0_eef_quat"])
 state, _ = env.reset()
-state = create_state(state)
 all_episode_reward = []
 history = {'Episode': [], 'AvgReturn': []}
 
@@ -40,7 +56,6 @@ agent = DDPG(state, env.action_space)
 # Loop of episodes
 for ie in range(n_episodes):
     state, _ = env.reset()
-    state = create_state(state)
     agent.reset()
     done = False
     episode_reward = 0
@@ -53,7 +68,6 @@ for ie in range(n_episodes):
 
         # This will make steering much easier
         next_state, reward, terminated, truncated, info = env.step(action)
-        next_state = create_state(next_state)
         done = terminated or truncated
 
         # Models action output has a different shape for this problem
